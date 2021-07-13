@@ -4,5 +4,5 @@ matplotlib==3.3.4
 scikit-learn==0.23.2
 tensorflow==2.4.1
 tensorflow-probability==0.12.2
-tfdiffeq==0.0.1
 six==1.15.0
+notebook==6.4.0
