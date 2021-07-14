@@ -1,22 +1,12 @@
 """
 Tools for non-intrusive reduced order modeling
 """
-__all__ = ['pod', 'dmd',
+__all__ = ['pod', 'dmd', 'rbf'
 	   ]
 
-#Core imports
-from pynirom.pod.pod_utils import (compute_pod_multicomponent,
-				   compute_trunc_basis,
-				   project_onto_basis,
-				   reconstruct_from_rom
-				  )
-
 from pynirom.dmd.main import DMDBase 
+from pynirom.rbf.main import PODRBFBase
 
 __version__ = '0.1.0'
 
-### OLD FILE
-#from . import dmd
-#from . import pod
-#from . import rbf
 
