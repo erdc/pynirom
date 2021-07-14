@@ -136,8 +136,8 @@ def plot_DMD_err(err, tseries, soln_names, var_string,**kwargs):
 
     if 'metric' in kwargs:
         if kwargs['metric'] == 'rel':
-            fig.suptitle('Relative errors of DMD NIROM solutions', fontsize=16)
+            fig.suptitle('Relative errors of DMD NIROM solutions', fontsize=18)
         elif kwargs['metric'] == 'rms':
-            fig.suptitle('Spatial RMS errors of DMD NIROM solutions', fontsize=16)
+            fig.suptitle('Spatial RMS errors of DMD NIROM solutions', fontsize=18)
     else:
-        fig.suptitle('Spatial RMS errors of DMD NIROM solutions', fontsize=16)
+        fig.suptitle('Spatial RMS errors of DMD NIROM solutions', fontsize=18)
