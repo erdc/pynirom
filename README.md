@@ -35,9 +35,7 @@ For installation, it is assumed that Anaconda, pip, and all Nvidia drivers (GPU 
 1. Create a conda environment: ```conda create -n newenv python==3.8```
 2. Activate conda environment: ```conda activate newenv```
 3. Clone the package repository: ```git clone https://github.com/erdc/pynirom.git && cd pynirom```
-4. To install the dependencies for the CPU version of the package type: ```python3 -m pip install -r requirements.txt```,
-
-or to install the dependencies for GPU support type: ```python3 -m pip install -r requirements_gpu.txt && ./install_gpu.sh```
+4. To install the dependencies for the CPU version of the package type: ```python3 -m pip install -r requirements.txt```, or to install the dependencies for GPU support type: ```python3 -m pip install -r requirements_gpu.txt && ./install_gpu.sh```
 5. Install the package: ```python3 setup.py install```
 
 
@@ -45,10 +43,9 @@ or to install the dependencies for GPU support type: ```python3 -m pip install -
 
 The examples directory contains several Jupyter notebooks that demonstrate how to use the different NIROM methodologies to build reduced order models for two fluid flow problems governed by the incompressible Navier Stokes equations and the shallow water equations.
 The high-fidelity snapshot data files are available at
-```
 [Shallow Water example](https://drive.google.com/drive/folders/1yhudg8RPvwV9SJx9CTqANEnyN55Grzem?usp=sharing), and the
 [Navier Stokes example](https://drive.google.com/drive/folders/1QG4dyoil5QGHjx3d1L3t0S6lsTGS7Vh0?usp=sharing).
-```
+
 These data files should be placed in the <./data/> directory.
 
 1. The ```PODRBF_cylinder.ipynb``` and ```PODRBF_SW.ipynb``` notebooks demonstrate the use of the PODRBF method for 2D flow around a cylinder and 2D shallow water flows in real world domains respectively.
