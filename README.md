@@ -35,8 +35,8 @@ For installation, it is assumed that Anaconda, pip, and all Nvidia drivers (GPU 
 1. Create a conda environment: ```conda create -n newenv python==3.8```
 2. Activate conda environment: ```conda activate newenv```
 3. Clone the package repository: ``` git clone https://github.com/erdc/pynirom.git && cd pynirom```
-4. To install the CPU version of the package type: ```python3 -m pip install -r requirements.txt```,
-or to install the package with GPU support type: ``` python3 -m pip install -r requirements_gpu.txt && ./install_gpu.sh```
+4. To install the CPU version of the package type: ```python3 -m pip install -r requirements.txt && python3 setup.py install```,
+or to install the package with GPU support type: ``` python3 -m pip install -r requirements_gpu.txt && ./install_gpu.sh && python3 setup.py install```
 
 
 ### Executing program
@@ -49,8 +49,8 @@ Shallow Water models - [Link](https://drive.google.com/drive/folders/1yhudg8RPvw
 
 Navier Stokes model - [Link](https://drive.google.com/drive/folders/1QG4dyoil5QGHjx3d1L3t0S6lsTGS7Vh0?usp=sharing).
 
-These data files should be placed in the <node\_nirom/data/> directory.
-* Some pre-trained ROM model files are available at [NIROM models](https://drive.google.com/drive/folders/19DEWdoS7Fkh-Cwe7Lbq6pdTdE290gYSS?usp=sharing). The DMD and PODRBF trained models should be placed in the <node\_nirom/data/> directory, and the NODE models should be placed inside the corresponding subdirectory of <node\_nirom/best\_models>.
+These data files should be placed in the <pynirom/data/> directory.
+* Some pre-trained ROM model files are available at [NIROM models](https://drive.google.com/drive/folders/19DEWdoS7Fkh-Cwe7Lbq6pdTdE290gYSS?usp=sharing). The DMD and PODRBF trained models should be placed in the <pynirom/data/> directory, and the NODE models should be placed inside the corresponding subdirectory of <pynirom/best\_models>.
 
 ## Authors
 
