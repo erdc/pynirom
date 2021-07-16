@@ -29,6 +29,20 @@ For details on each method and the numerical examples please refer to -
 
 A list of all the package requirements along with version information is provided in the [requirements](requirements.txt) file.
 
+
+### Installation
+
+The package can work with or without GPU support. Install the CPU version using
+```
+pip install -r requirements.txt
+```
+
+Install the GPU version using
+```
+pip install -r requirements_gpu.txt
+./install_gpu.sh
+```
+
 ### Executing program
 
 * NODE scripts, available inside the notebooks directory, can be invoked with various user-specified configuration options to test different NN models.
