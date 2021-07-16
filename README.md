@@ -27,14 +27,14 @@ For details on each method and the numerical examples please refer to -
 * Tensorflow TF 2 / 1.15.0 or above. Prefereably TF 2.0+, as the entire tfdiffeq codebase requires Eager Execution. Install either the CPU or the GPU version depending on available resources.
 * tfdiffeq - Installation directions are available at [tfdiffeq](https://github.com/titu1994/tfdiffeq).
 
-The code has been tested with Python3.7 and Python 3.8 version, but it should be comptabile with any Python3.x. Python2 support is no longer maintained.
+The code has been tested with Python3.7 and Python 3.8, but it should be compatible with any Python3.x. Python2 support is no longer maintained.
 A list of all the package requirements along with version information is provided in the [requirements](requirements.txt) file.
 
 For installation, it is assumed that Anaconda, pip, and all Nvidia drivers (GPU support) are already installed. Then the following steps can be used to create a conda environment and install all necessary dependencies. Alternatively, python virtual environments can also be used. 
 
 1. Create a conda environment: ```conda create -n newenv```
 2. Activate conda environment: ```conda activate newenv```
-3. Clone the package repository: ``` git clone https://github.com/erdc/pynirom.git && cd pynirom``
+3. Clone the package repository: ``` git clone https://github.com/erdc/pynirom.git && cd pynirom```
 4. To install the CPU version of the package type: ```python3 -m pip install -r requirements.txt```,
 or to install the package with GPU support type: ``` python3 -m pip install -r requirements_gpu.txt && ./install_gpu.sh```
 
