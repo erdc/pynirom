@@ -32,7 +32,7 @@ A list of all the package requirements along with version information is provide
 
 For installation, it is assumed that Anaconda, pip, and all Nvidia drivers (GPU support) are already installed. Then the following steps can be used to create a conda environment and install all necessary dependencies. Alternatively, python virtual environments can also be used. 
 
-1. Create a conda environment: ```conda create -n newenv```
+1. Create a conda environment: ```conda create -n newenv python==3.8```
 2. Activate conda environment: ```conda activate newenv```
 3. Clone the package repository: ``` git clone https://github.com/erdc/pynirom.git && cd pynirom```
 4. To install the CPU version of the package type: ```python3 -m pip install -r requirements.txt```,
