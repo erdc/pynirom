@@ -6,4 +6,4 @@ tensorflow==2.4.1
 tensorflow-probability==0.12.2
 six==1.15.0
 notebook==6.4.0
-git+git://github.com/titu1994/tfdiffeq.git@6113f10#egg=tfdiffeq
+git+git://github.com/titu1994/tfdiffeq.git@v0.0.1-pre0#egg=tfdiffeq

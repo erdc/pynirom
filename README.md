@@ -1,10 +1,10 @@
 # NIROM using Python
 
 A collection of Python implementations of non-intrusive reduced order modeling techniques. This repo provides modules for
-1) linear dimension reduction using Proper Orthogonal Decomposition (POD),
-2) evolution of latent-space coefficients using a greedy Radial Basis Function (RBF) interpolation,
-3) evolution of latent-space coefficients using a Tensorflow-based implementation of neural ordinary differential equations (NODE), and
-4) extracting spatio-temporal coherent structures from snapshot data using Dynamic Mode Decomposition (DMD). Numerical examples are provided using a benchmark CFD problem and real world applications of shallow water flow problems.
+1. linear dimension reduction using Proper Orthogonal Decomposition (POD),
+2. evolution of latent-space coefficients using a greedy Radial Basis Function (RBF) interpolation,
+3. evolution of latent-space coefficients using a Tensorflow-based implementation of neural ordinary differential equations (NODE), and
+4. extracting spatio-temporal coherent structures from snapshot data using Dynamic Mode Decomposition (DMD). Numerical examples are provided using a benchmark CFD problem and real world applications of shallow water flow problems.
 
 For details on each method and the numerical examples please refer to -
 
@@ -21,27 +21,23 @@ For details on each method and the numerical examples please refer to -
 ## Getting Started
 
 
-### Dependencies
+### Dependencies and installation
 
 * Python 3.x
 * Tensorflow TF 2 / 1.15.0 or above. Prefereably TF 2.0+, as the entire tfdiffeq codebase requires Eager Execution. Install either the CPU or the GPU version depending on available resources.
 * tfdiffeq - Installation directions are available at [tfdiffeq](https://github.com/titu1994/tfdiffeq).
 
+The code has been tested with Python3.7 and Python 3.8 version, but it should be comptabile with any Python3.x. Python2 support is no longer maintained.
 A list of all the package requirements along with version information is provided in the [requirements](requirements.txt) file.
 
+For installation, it is assumed that Anaconda, pip, and all Nvidia drivers (GPU support) are already installed. Then the following steps can be used to create a conda environment and install all necessary dependencies. Alternatively, python virtual environments can also be used. 
 
-### Installation
+1. Create a conda environment: ```conda create -n newenv```
+2. Activate conda environment: ```conda activate newenv```
+3. Clone the package repository: ``` git clone https://github.com/erdc/pynirom.git && cd pynirom``
+4. To install the CPU version of the package type: ```python3 -m pip install -r requirements.txt```,
+or to install the package with GPU support type: ``` python3 -m pip install -r requirements_gpu.txt && ./install_gpu.sh```
 
-The package can work with or without GPU support. Install the CPU version using
-```
-pip install -r requirements.txt
-```
-
-Install the GPU version using
-```
-pip install -r requirements_gpu.txt
-./install_gpu.sh
-```
 
 ### Executing program
 
