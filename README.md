@@ -30,27 +30,32 @@ For details on each method and the numerical examples please refer to -
 The code has been tested with Python3.7 and Python 3.8, but it should be compatible with any Python3.x. Python2 support is no longer maintained.
 A list of all the package requirements along with version information is provided in the [requirements](requirements.txt) file.
 
-For installation, it is assumed that Anaconda, pip, and all Nvidia drivers (GPU support) are already installed. Then the following steps can be used to create a conda environment and install all necessary dependencies. Alternatively, python virtual environments can also be used. 
+For installation, it is assumed that Anaconda, pip, and all Nvidia drivers (GPU support) are already installed. Then the following steps can be used to create a conda environment and install all necessary dependencies. Alternatively, python virtual environments can also be used.
 
 1. Create a conda environment: ```conda create -n newenv python==3.8```
 2. Activate conda environment: ```conda activate newenv```
-3. Clone the package repository: ``` git clone https://github.com/erdc/pynirom.git && cd pynirom```
-4. To install the CPU version of the package type: ```python3 -m pip install -r requirements.txt && python3 setup.py install```,
-or to install the package with GPU support type: ``` python3 -m pip install -r requirements_gpu.txt && ./install_gpu.sh && python3 setup.py install```
+3. Clone the package repository: ```git clone https://github.com/erdc/pynirom.git && cd pynirom```
+4. To install the dependencies for the CPU version of the package type: ```python3 -m pip install -r requirements.txt```,
+
+or to install the dependencies for GPU support type: ```python3 -m pip install -r requirements_gpu.txt && ./install_gpu.sh```
+5. Install the package: ```python3 setup.py install```
 
 
-### Executing program
+### Example notebooks to get started
 
-* NODE scripts, available inside the notebooks directory, can be invoked with various user-specified configuration options to test different NN models.
-* DMD and PODRBF notebooks are also available inside the notebooks directory.
-* High-fidelity snapshot data files are available for
+The examples directory contains several Jupyter notebooks that demonstrate how to use the different NIROM methodologies to build reduced order models for two fluid flow problems governed by the incompressible Navier Stokes equations and the shallow water equations.
+The high-fidelity snapshot data files are available at
+```
+[Shallow Water example](https://drive.google.com/drive/folders/1yhudg8RPvwV9SJx9CTqANEnyN55Grzem?usp=sharing), and the
+[Navier Stokes example](https://drive.google.com/drive/folders/1QG4dyoil5QGHjx3d1L3t0S6lsTGS7Vh0?usp=sharing).
+```
+These data files should be placed in the <./data/> directory.
 
-Shallow Water models - [Link](https://drive.google.com/drive/folders/1yhudg8RPvwV9SJx9CTqANEnyN55Grzem?usp=sharing),
+1. The ```PODRBF_cylinder.ipynb``` and ```PODRBF_SW.ipynb``` notebooks demonstrate the use of the PODRBF method for 2D flow around a cylinder and 2D shallow water flows in real world domains respectively.
+2. The ```DMD_cylinder.ipynb``` and ```DMD_SW.ipynb``` notebooks illustrate the use of DMD for these problems.
+3. The ```PODNODE_cylinder.ipynb``` and ```PODNODE_SW.ipynb``` notebooks illustrate the use of the PODNODE method for the example problems.
+4. Some pre-trained NIROM solutions are available at [NIROM models](https://drive.google.com/drive/folders/19DEWdoS7Fkh-Cwe7Lbq6pdTdE290gYSS?usp=sharing). These files should be placed in the <./data/> directory. The ```comparison_cylinder.ipynb``` and ```comparison_SW.ipynb``` notebooks contain visualizations to compare the predictions obtained using the different methods.
 
-Navier Stokes model - [Link](https://drive.google.com/drive/folders/1QG4dyoil5QGHjx3d1L3t0S6lsTGS7Vh0?usp=sharing).
-
-These data files should be placed in the <pynirom/data/> directory.
-* Some pre-trained ROM model files are available at [NIROM models](https://drive.google.com/drive/folders/19DEWdoS7Fkh-Cwe7Lbq6pdTdE290gYSS?usp=sharing). The DMD and PODRBF trained models should be placed in the <pynirom/data/> directory, and the NODE models should be placed inside the corresponding subdirectory of <pynirom/best\_models>.
 
 ## Authors
 
@@ -113,7 +118,7 @@ year = {2021}
 
 ## Acknowledgments
 
-* Thank you to ERDC-HPC facilities for support with valuable computational infrastructure
+* Thank you to ERDC-HPC facilities for support with valuable computational infrastructure.
 * Thank you to ORISE for support with appointment to the Postgraduate Research Participation Program.
 
 Inspiration, code snippets, etc.
