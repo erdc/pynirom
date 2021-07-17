@@ -44,6 +44,7 @@ class DMDBase(object):
         self._rank=rank
         for thing in ['_U_r','_Sigma_r','_V_r','_X']:
             setattr(self,thing,None)
+            
     @property
     def rank(self):
         """

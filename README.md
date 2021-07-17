@@ -43,9 +43,8 @@ For installation, it is assumed that Anaconda, pip, and all Nvidia drivers (GPU 
 
 The examples directory contains several Jupyter notebooks that demonstrate how to use the different NIROM methodologies to build reduced order models for two fluid flow problems governed by the incompressible Navier Stokes equations and the shallow water equations.
 The high-fidelity snapshot data files are available at
-[Shallow Water example](https://drive.google.com/drive/folders/1yhudg8RPvwV9SJx9CTqANEnyN55Grzem?usp=sharing), and the
+[Shallow Water example](https://drive.google.com/drive/folders/1yhudg8RPvwV9SJx9CTqANEnyN55Grzem?usp=sharing), and
 [Navier Stokes example](https://drive.google.com/drive/folders/1QG4dyoil5QGHjx3d1L3t0S6lsTGS7Vh0?usp=sharing).
-
 These data files should be placed in the <./data/> directory.
 
 1. The ```PODRBF_cylinder.ipynb``` and ```PODRBF_SW.ipynb``` notebooks demonstrate the use of the PODRBF method for 2D flow around a cylinder and 2D shallow water flows in real world domains respectively.

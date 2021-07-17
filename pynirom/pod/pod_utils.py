@@ -5,7 +5,7 @@ import scipy
 
 
 """
-Simple Utilities for Managing Snapshots and computing Proper Orthogonal Decompositions
+Utilities for managing snapshots and computing Proper Orthogonal Decomposition
 """
 
 def compute_pod_multicomponent(S_pod,subtract_mean=True,subtract_initial=False,full_matrices=False):
@@ -126,6 +126,5 @@ def reconstruct_from_rom(Zpred,Phi,S_mean,nw,msg=False):
     ctr= 0
     for key in soln_names:
         S[key] = np.dot(Phi[key],Zpred[key]) + np.outer(S_mean[key],np.ones(Zpred[key].shape[1]))
-        ctr += nw[key]
 
     return S
