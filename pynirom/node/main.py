@@ -24,10 +24,9 @@ from tfdiffeq.adjoint import odeint as adjoint_odeint
 class NODEBase(object):
     """
     Base class for Non-intrusive Reduced Order Modeling (NIROM)
-    with Proper Orthogonal Decomposition (POD) for the selection
-    of an optimal linear reduced basis space and Neural ODE (NODE)
-    for the approximation of the dynamics in the space spanned
-    by the POD modes.
+    with Neural ODE (NODE) for the approximation of the dynamics
+    in a suitable reduced space defined by linear or nonlinear
+    dimension reduction methods.
 
     """
     @staticmethod
@@ -349,7 +348,7 @@ class NODEBase(object):
                     learn_rate= self._learn_rate, device=self._device, solver=self._solver,
                     purpose=purpose, adjoint=self._adjoint, minibatch=minibatch,
                     pre_trained_dir=options['pre_trained_dir'])
-                    
+
         return train_loss_results, train_lr, saved_ep
 
 

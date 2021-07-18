@@ -35,8 +35,8 @@ For installation, it is assumed that Anaconda, pip, and all Nvidia drivers (GPU 
 1. Create a conda environment: ```conda create -n newenv python==3.8```
 2. Activate conda environment: ```conda activate newenv```
 3. Clone the package repository: ```git clone https://github.com/erdc/pynirom.git && cd pynirom```
-4. To install the dependencies for the CPU version of the package type: ```python3 -m pip install -r requirements.txt```, or to install the dependencies for GPU support type: ```python3 -m pip install -r requirements_gpu.txt && ./install_gpu.sh```
-5. Install the package: ```python3 setup.py install```
+4. To install the dependencies for the CPU version of the package type: ```python3 -m pip install -r requirements.txt .```, or to install the dependencies for GPU support type: ```python3 -m pip install -r requirements_gpu.txt . && ./install_gpu.sh```
+5. Alternatively, the dependencies can be installed using ```pip``` or ```conda``` and then, the ```pynirom``` package can be installed by: ```python3 setup.py install```
 
 
 ### Example notebooks to get started
@@ -50,6 +50,7 @@ These data files should be placed in the <./data/> directory.
 1. The ```PODRBF_cylinder.ipynb``` and ```PODRBF_SW.ipynb``` notebooks demonstrate the use of the PODRBF method for 2D flow around a cylinder and 2D shallow water flows in real world domains respectively.
 2. The ```DMD_cylinder.ipynb``` and ```DMD_SW.ipynb``` notebooks illustrate the use of DMD for these problems.
 3. The ```PODNODE_cylinder.ipynb``` and ```PODNODE_SW.ipynb``` notebooks illustrate the use of the PODNODE method for the example problems.
+4. The ```comparison_cylinder.ipynb``` and ```comparison_SW.ipynb``` notebooks contain visualizations to compare the predictions obtained using the different NIROM methods. To run these notebooks download the pre-computed PODNODE solution files from [Link](https://drive.google.com/drive/folders/19DEWdoS7Fkh-Cwe7Lbq6pdTdE290gYSS?usp=sharing) and place these files according to the instructions in the notebooks. Also, run the DMD and PODRBF notebooks for each example problem to generate the respective NIROM solutions. 
 
 
 ## Authors
