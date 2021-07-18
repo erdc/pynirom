@@ -6,6 +6,7 @@ Base module for PODNODE NIROM
 
 import numpy as np
 import pickle
+import time
 
 import pynirom
 from pynirom.node import node as node
@@ -103,6 +104,14 @@ class NODEBase(object):
         return self._train_state
 
     @property
+    def init_state(self):
+        """
+        Latent space training snapshot at initial time
+        array dim. = (Latent space size,)
+        """
+        return self._init_state
+
+    @property
     def train_times(self):
         """
         Time points array used for training
@@ -116,6 +125,48 @@ class NODEBase(object):
         array dim. = Latent space size X prediction time points
         """
         return self._predicted_state
+
+    @property
+    def optimizer(self):
+        """
+        Optimizer adopted for NN training
+        """
+        return self._optimizer
+
+    @property
+    def learn_rate(self):
+        """
+        Learning rate used for NODE Training
+        Can either be a fixed value or
+        a Learning rate scheduler
+        """
+        return self._learn_rate
+
+    @property
+    def solver(self):
+        """
+        ODE solver used for latent space evolution
+        and backward gradient evolution in the
+        adjoint method
+        """
+        return self._solver
+
+    @property
+    def adjoint(self):
+        """
+        Boolean flag indicating the use of the
+        adjoint method in NODE training
+        """
+        return self._adjoint
+
+    @property
+    def augmented(self):
+        """
+        Boolean flag indicating the use of augmented
+        states or the ANODE method for training
+        """
+        return self._augmented
+
 
     def prepare_input_data(self, Z_train, nw, times_train, stack_order, times_predict=None, Z_pred_true=None):
         """
@@ -146,11 +197,11 @@ class NODEBase(object):
         dt_predict: Time step of the time series to be used for computing
                     the NODE prediction [Optional]
         """
-        npod_total = np.sum(list(nw.values()))
-        train_state_array = np.zeros((times_train.size, npod_total));
+        state_len = np.sum(list(nw.values()))
+        train_state_array = np.zeros((times_train.size, state_len));
         if times_predict is not None:
             assert Z_pred_true is not None, "Prediction time points provided, but true snapshots not provided"
-            true_pred_state_array = np.zeros((times_predict.size, npod_total));
+            true_pred_state_array = np.zeros((times_predict.size, state_len));
         else:
             true_pred_state_array = None
         ctr=0
@@ -162,15 +213,15 @@ class NODEBase(object):
             ctr+=nw[key]
 
         init_state = train_state_array[0,:]
-        state_len = np.shape(train_state_array)[1]
         dt_train = (times_train[-1]-times_train[0])/(times_train.size-1)
         if times_predict is not None:
             dt_predict = (times_predict[-1]-times_predict[0])/(times_predict.size)
 
         self._train_state = train_state_array
+        self._init_state = init_state
         self._train_time = times_train
         self._n_snap_train = times_train.size
-        self._n_latent = npod_total
+        self._n_latent = state_len
         self._n_reduced = nw
 
         if times_predict is not None:
@@ -179,11 +230,13 @@ class NODEBase(object):
             return train_state_array, init_state, state_len, dt_train
 
 
-    def preprocess_data(self,scale_states=False, augmented=False, lr_decay=True, init_lr = 0.001, opt='RMSProp', **options):
+    def preprocess_data(self, scale_states=False, scale_time=False, augmented=False, lr_decay=True,
+                            init_lr = 0.001, opt='RMSprop', **options):
         """
 
         Input::
         scale_states: Boolean. If True, scale training state array
+        scale_time: Boolean. If True, scale training time array
         scaling_method: [Optional] string. If scale_states++True, specify
                         the scaling function to be used.
                         'centered' - maps each element to [-1,1]
@@ -201,7 +254,7 @@ class NODEBase(object):
         staircase: Boolean. [Optional] If True, decays the learning rate at
                     discrete intervals
         opt: string. Specify the Optimization algorithm for hyperparameter tuning
-                Currently accepts 'Adam' or 'RMSProp'
+                Currently accepts 'Adam' or 'RMSprop'
 
         Output::
         true_state_tensor: Augmented state array casted to a TF tensor
@@ -210,21 +263,35 @@ class NODEBase(object):
         learn_rate: Fixed learning rate or Scheduler
         opimizer: Returns the chosen optimizer
         """
+        if scale_time:
+            times_train, tscale = node.scale_time(self._train_time)
+            self._time_scaler = tscale
+        else:
+            times_train = self._train_time
+        self._scale_time = scale_time
+
         if scale_states:
-            train_state_array = node.scale_states(self._train_state, method=options['scaling_method'])
+            train_state_array, scaling_param = node.scale_states(self._train_state,
+                                                    method=options['scaling_method'])
+            self._state_scaler = scaling_param
         else:
             train_state_array = self._train_state
+        self._scale_states = scale_states
 
-        try:
+        if augmented:
             aug_dim = options['aug_dim']
-        except:
+            self._n_latent += aug_dim
+        else:
             aug_dim = 0
+        self._augmented = augmented
+        self._aug_dim = aug_dim
+
         true_state_tensor, time_tensor, init_tensor = node.augment_state(train_state_array,
-                                                    self._train_time, aug_dim)
+                                                    times_train, aug_dim)
 
         learn_rate = node.set_learning_rate(decay=lr_decay, init_lr = init_lr,
-                            decay_steps = options['decay_steps'], decay_rate = options['decay_rate'],
-                            staircase = options['staircase'])
+                    decay_steps = options['decay_steps'], decay_rate = options['decay_rate'],
+                    staircase = options['staircase'])
 
         optimizer = node.set_optimizer(opt=opt, learn_rate=learn_rate)
 
@@ -234,51 +301,111 @@ class NODEBase(object):
         return true_state_tensor, time_tensor, init_tensor, learn_rate, optimizer
 
 
-    def train_model(self, true_state_tensor, times_tensor, init_state, epochs, savedir,
-                    solver='rk4', purpose='train', adjoint=False, minibatch=False):
+    def train_model(self, true_state_tensor, times_tensor, init_tensor, epochs, savedir,
+                    solver='rk4', purpose='train', adjoint=False, minibatch=False, **options):
         """
-        """
-        train_loss_results, train_lr, saved_ep = node.run_node(true_state_tensor, times_tensor, init_state,
-                        epochs, savedir, optimizer=self._optimizer, learn_rate= self._learn_rate,
-                        device=self._device, solver=solver, purpose=purpose, adjoint=adjoint, minibatch=minibatch)
+        NODE model training using specified configuration
+        Input::
+        true_state_tensor: Augmented state array casted as a TF tensor
+        time_tensor: Time array casted as a TF tensor
+        init_tensor: Initial state vector casted as a TF tensor
+        epochs: Number of epochs to train
+        savedir: Directory location to save the trained TF model
+        solver: ODE solver to use for NODE training (Check `tfdiffeq` documentation for options)
+        purpose: Training mode. Available options are
+                'train': Train a model from scratch
+                'retrain': Re-train an existing pretrained model. Also specify 'pre_trained_dir'
+                        as an optional argument to denote the location of the pretrained model
+                'eval': Generate NODE predictions using an existing model. Also specify
+                        'pre_trained_dir' as an optional argument to denote the location of the
+                        pretrained model
+        adjoint: Boolean. If True, the adjoint calculations are used in NODE training
+        minibatch: Boolean. If True, minibatches are used in NODE training
+        pre_trained_dir: [Optional] String. Specifies the location of the pretrained NODE model
+                        used during 'retrain' or 'eval' mode
 
+        Output::
+        train_loss_results: List. Training loss values after each epoch
+        train_lr: List. Current learning rate after every epoch that the model state is saved
+        saved_ep: List. Current epoch number every time the model state is saved
+        """
+
+        self._solver = solver
+        self._adjoint = adjoint
+
+        if purpose == 'train':
+            train_loss_results, train_lr, saved_ep = node.run_node(true_state_tensor, times_tensor,
+                    init_tensor, epochs, savedir, optimizer=self._optimizer,
+                    learn_rate= self._learn_rate, device=self._device, solver=self._solver,
+                    purpose=purpose, adjoint=self._adjoint, minibatch=minibatch)
+        elif purpose == 'retrain':
+            train_loss_results, train_lr, saved_ep = node.run_node(true_state_tensor, times_tensor,
+                    init_tensor, epochs, savedir, optimizer=self._optimizer,
+                    learn_rate= self._learn_rate, device=self._device, solver=self._solver,
+                    purpose=purpose, adjoint=self._adjoint, minibatch=minibatch,
+                    pre_trained_dir=options['pre_trained_dir'])
         return train_loss_results, train_lr, saved_ep
 
 
-    def predict_time(self, times_online, use_greedy=False, **options):
+    def predict_time(self, times_predict, init_tensor, pre_trained_dir, **options):
         """
-        Evaluate reduced order POD-RBF model
+        Evaluate reduced order POD-NODE model
         at queried online time points
 
         Input:
-        times_online -- array of time points to be queried
-                    for evaluating ROM
-        eng_cap -- Total energy fraction captured in mode list L (Optional)
+        times_predict : array of time points at which NODE predictions are sought
+        init_tensor: Initial state tensor (possibly augmented)
+        pre_trained_dir: Location of pretrained NODE TF model
+        aug_dim: [Optional]
         """
-        self._times_online = times_online
-        if 't0_ind' in options:
-            t0_ind = options['t0_ind']
+        if self._scale_time:
+            times_predict, tscale = node.scale_time(times_predict, self._time_scaler)
         else:
-            t0_ind = 0
+            pass
+
+        self._predict_time = times_predict
 
 
-        self._rbf_centers = self._rbf_centers_train
-        self._rbf_coeff = self._rbf_coeff_train
-        self._scale_user = self._scale
-        # self._ind_greedy = None
+        print("\n---- Computing NODE NIROM solution ----\n")
+        pred_start_time = time.time()
+        pred_state_array = node.eval_node(times_predict, self._n_latent, init_tensor,
+                        pre_trained_dir, adjoint=self._adjoint, augmented=self._augmented,
+                        solver=self._solver, aug_dim=self._aug_dim)
+        pred_end_time = time.time()
+        print("Time needed to compute NODE predictions = %f"%(pred_end_time-pred_start_time))
 
-        print("\n---- Computing RBF NIROM solution ----\n")
-        S_pred, Z_pred = rom.rbf_online(self._rbf_centers, self._rbf_coeff, self._S,
-                                        self._times_online, self._scale_user, self._Phi, self._S_mean,
-                                        self._kernel, time_disc=self._time_disc_method, beta=2.5,
-                                        t0_ind=t0_ind)
-        self._S_pred = S_pred
-        self._Z_pred = Z_pred
+        print("\n---- Postprocessing NODE solution ----\n")
+        pred_state_array, times_predict = self.postprocess_results(pred_state_array)
+        self._predicted_state = pred_state_array
 
-        if use_greedy:
-            return S_pred, Z_pred, self._ind_greedy
-        else:
-            return S_pred, Z_pred
+        return pred_state_array, times_predict
+
+
+    def postprocess_results(self, pred_state_array, **options):
+        """
+        Post-process NODE predicted states
+        Input::
+        pred_state_array: predictions directly generated by NODE
+
+        Output::
+        predicted_states: Apply any inverse state scaling
+                        transforms to predicted state array
+        times_predict: Apply any inverse time scaling
+                transforms to time array used for predictions
+        """
+        if self._augmented:
+            pred_state_array = node.deaugment_state(pred_state_array, self._aug_dim)
+
+        if self._scale_states:
+            predicted_states = node.scale_states_inverse(pred_state_array, self._state_scaler)
+
+        if self._scale_time:
+            times_predict = node.scale_time_inverse(self._predict_time, self._time_scaler)
+            self._predict_time = times_predict
+
+        return predicted_states, self._predict_time
+
+
 
     def compute_error(self, true, pred, soln_names, metric='rms'):
         """
@@ -325,47 +452,47 @@ class DNN(tf.keras.Model):
         super().__init__(**kwargs)
 
         try:
-            aug_dims = kwargs['aug_dim']
+            aug_dim = kwargs['aug_dim']
         except:
-            aug_dims = 0
+            aug_dim = 0
         if N_layers == 1:
 
             self.eqn = tf.keras.Sequential([tf.keras.layers.Dense(N_neurons, activation=act_f,
                                            kernel_initializer = tf.keras.initializers.glorot_uniform(),
                                            bias_initializer='zeros',
-                                           input_shape=(state_len+aug_dims,)),
-                         tf.keras.layers.Dense(state_len+aug_dims)])
+                                           input_shape=(state_len+aug_dim,)),
+                         tf.keras.layers.Dense(state_len+aug_dim)])
 
         elif N_layers == 2:
 
             self.eqn = tf.keras.Sequential([tf.keras.layers.Dense(N_neurons, activation=act_f,
                                            kernel_initializer = tf.keras.initializers.glorot_uniform(),
                                            bias_initializer='zeros',
-                                           input_shape=(state_len+aug_dims,)),
+                                           input_shape=(state_len+aug_dim,)),
                                            tf.keras.layers.Dense(N_neurons, activation='linear',
                                            kernel_initializer = tf.keras.initializers.glorot_uniform(),
                                            bias_initializer='zeros'),
-                         tf.keras.layers.Dense(state_len+aug_dims)])
+                         tf.keras.layers.Dense(state_len+aug_dim)])
 
         elif N_layers == 3:
 
             self.eqn = tf.keras.Sequential([tf.keras.layers.Dense(N_neurons, activation=act_f,
                                            kernel_initializer = tf.keras.initializers.glorot_uniform(),
                                            bias_initializer='zeros',
-                                           input_shape=(state_len+aug_dims,)),
+                                           input_shape=(state_len+aug_dim,)),
                                            tf.keras.layers.Dense(N_neurons, activation=act_f,
                                            kernel_initializer = tf.keras.initializers.glorot_uniform(),
                                            bias_initializer='zeros'),
                                            tf.keras.layers.Dense(N_neurons, activation='linear',
                                            kernel_initializer = tf.keras.initializers.glorot_uniform(),
                                            bias_initializer='zeros'),
-                         tf.keras.layers.Dense(state_len+aug_dims)])
+                         tf.keras.layers.Dense(state_len+aug_dim)])
 
         elif N_layers == 4:
             self.eqn =  tf.keras.Sequential([tf.keras.layers.Dense(N_neurons, activation=act_f,
                                            kernel_initializer = tf.keras.initializers.glorot_uniform(),
                                            bias_initializer='zeros',
-                                           input_shape=(state_len+aug_dims,)),
+                                           input_shape=(state_len+aug_dim,)),
                                            tf.keras.layers.Dense(N_neurons, activation=act_f,
                                            kernel_initializer = tf.keras.initializers.glorot_uniform(),
                                            bias_initializer='zeros'),
@@ -375,7 +502,7 @@ class DNN(tf.keras.Model):
                                            tf.keras.layers.Dense(N_neurons, activation='linear',
                                            kernel_initializer = tf.keras.initializers.glorot_uniform(),
                                            bias_initializer='zeros'),
-                         tf.keras.layers.Dense(state_len+aug_dims)])
+                         tf.keras.layers.Dense(state_len+aug_dim)])
 
     @tf.function
     def call(self, t, y):

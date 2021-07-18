@@ -24,20 +24,23 @@ Neural ODE to model temporal dynamics in the latent space
 """
 
 
-def scale_time(time_array):
+def scale_time(time_array, **options):
     """
-    Simple utility method to scale a
-    given time array [0,T] to [0,1]
+    Scale a given time array [0,T] to [0,1]
 
     Input::
     time_array: numpy time array
+    tscale: [Optional] Scaling factor to use
 
     Output::
     scaled numpy time array
     """
-    tscale = np.amax(time_array)
+    try:
+        tscale = options['tscale']
+    except:
+        tscale = np.amax(time_array)
 
-    return time_array/tscale
+    return time_array/tscale, tscale
 
 
 def scale_states(state_array, method='centered'):
@@ -51,19 +54,24 @@ def scale_states(state_array, method='centered'):
             abs : --> [0,1] for each element
 
     Output::
-    Scaled state array
+    state_array: Scaled state array
+    scaling_param: Dict of parameters related
+            to the chosen scaling method
     """
     if method == 'centered':  ## Scale each element between [-1,1]
         max_g = np.amax(state_array,axis=0);
         min_g = np.amin(state_array,axis=0)
         scaler = lambda x: (2*(x - min_g)/(max_g - min_g) - 1)
         state_array = scaler(state_array)
+        scaling_param = {'max_g': max_g, 'min_g': min_g, 'method': method}
+
     elif method == 'abs':  ## Scale each element between [0,1]
         scale_mm = MinMaxScaler()
         scale_mm.fit(state_array)
         state_array = scale_mm.transform(state_array)
+        scaling_param = {'scale_mm': scale_mm, 'method': method}
 
-    return state_array
+    return state_array, scaling_param
 
 
 def augment_state(state_array, time_array, aug_dim=0):
@@ -110,9 +118,8 @@ def set_learning_rate(decay=False, init_lr = 0.001, **kwargs):
     if decay:
         try:
             learn_rate = tf.keras.optimizers.schedules.ExponentialDecay(init_lr,
-                                        kwargs['decay_steps'],
-                                        kwargs['decay_rate'],
-                              staircase=kwargs['staircase'])
+                                    kwargs['decay_steps'], kwargs['decay_rate'],
+                                    staircase=kwargs['staircase'])
         except:
             print("Learning rate decay function parameters not provided")
     else:
@@ -121,12 +128,12 @@ def set_learning_rate(decay=False, init_lr = 0.001, **kwargs):
     return learn_rate
 
 
-def set_optimizer(opt='RMSProp', learn_rate=0.001):
+def set_optimizer(opt='RMSprop', learn_rate=0.001):
     """
     Set the optimizer for computing network hyperparameters
     Input::
     opt: string. Denotes the optimization algorithm to be used.
-            Currently supports 'Adam' and 'RMSProp'.
+            Currently supports 'Adam' and 'RMSprop'.
     learn_rate: Either a fixed float32/64 scalar or a learning rate
             schedule that defines how the learning rate of the
             optimizer changes over time
@@ -143,9 +150,33 @@ def set_optimizer(opt='RMSProp', learn_rate=0.001):
     return optimizer
 
 
-def run_node(true_state_tensor, times_tensor, init_state, epochs, savedir, optimizer, learn_rate, device,
-                solver='rk4', purpose='train', adjoint=False, minibatch=False,):
+def run_node(true_state_tensor, times_tensor, init_state, epochs, savedir, optimizer, learn_rate,
+            device, solver='rk4', purpose='train', adjoint=False, minibatch=False, **options):
     """
+    NODE model training using specified configuration
+    Input::
+    true_state_tensor: Augmented state array casted as a TF tensor
+    time_tensor: Time array casted as a TF tensor
+    init_tensor: Initial state vector casted as a TF tensor
+    epochs: Number of epochs to train
+    savedir: Directory location to save the trained TF model
+    solver: ODE solver to use for NODE training (Check `tfdiffeq` documentation for options)
+    purpose: Training mode. Available options are
+            'train': Train a model from scratch
+            'retrain': Re-train an existing pretrained model. Also specify 'pre_trained_dir'
+                    as an optional argument to denote the location of the pretrained model
+            'eval': Generate NODE predictions using an existing model. Also specify
+                    'pre_trained_dir' as an optional argument to denote the location of the
+                    pretrained model
+    adjoint: Boolean. If True, the adjoint calculations are used in NODE training
+    minibatch: Boolean. If True, minibatches are used in NODE training
+    pre_trained_dir: [Optional] String. Specifies the location of the pretrained NODE model
+                    used during 'retrain' or 'eval' mode
+
+    Output::
+    train_loss_results: List. Training loss values after each epoch
+    train_lr: List. Current learning rate after every epoch that the model state is saved
+    saved_ep: List. Current epoch number every time the model state is saved
     """
 
     print('\n------------Begin training---------')
@@ -156,10 +187,10 @@ def run_node(true_state_tensor, times_tensor, init_state, epochs, savedir, optim
 
     state_len = tf.shape(true_state_tensor)[1]
     try:
-        learning_rate_decay = learn_rate.dtype == tf.float32
+        learning_rate_decay = (not learn_rate.dtype == tf.float32)
     except:
-        learning_rate_decay = False
-
+        learning_rate_decay = True
+    
     if adjoint == True:
         int_ode = adjoint_odeint
     elif adjoint == False:
@@ -202,7 +233,10 @@ def run_node(true_state_tensor, times_tensor, init_state, epochs, savedir, optim
                     optimizer.apply_gradients(zip(grads, model.trainable_variables))
 
                     train_loss_results.append(loss.numpy())
-                    print("Epoch {0}: Loss = {1:0.6f}, LR = {2:0.6f}".format(epoch+1, loss.numpy(), learn_rate(optimizer.iterations).numpy()))
+                    if learning_rate_decay:
+                        print("Epoch {0}: Loss = {1:0.6f}, LR = {2:0.6f}".format(epoch+1, loss.numpy(), learn_rate(optimizer.iterations).numpy()))
+                    else:
+                        print("Epoch {0}: Loss = {1:0.6f}, LR = {2:0.6f}".format(epoch+1, loss.numpy(), learn_rate))
                     print()
                     if (epoch+1)%(epochs//4) == 0:
                         print("******Saving model state. Epoch {0}******\n".format(epoch + 1))
@@ -226,17 +260,19 @@ def run_node(true_state_tensor, times_tensor, init_state, epochs, savedir, optim
         print("****Total training time = {0}****\n".format(end_time - start_time))
 
     elif purpose == 'retrain':
-
+        pre_trained_dir = options['pre_trained_dir']
         saved_lr = np.load(pre_trained_dir+'train_lr.npz')
         initial_learning_rate = saved_lr['lr'][-1]
         ep = saved_lr['ep'][-1]
         print("Initial lr = {0}".format(initial_learning_rate))
-        if not os.path.exists(savedir+'/current/model_weights_cyl/'):
-            os.makedirs(savedir+'/current/model_weights_cyl/')
+        if not os.path.exists(savedir+'/model_weights/'):
+            os.makedirs(savedir+'/model_weights/')
 
         if learning_rate_decay == True:
-            learn_rate = tf.keras.optimizers.schedules.ExponentialDecay(initial_learning_rate, decay_steps,
-                                                        decay_rate, staircase=staircase_opt)
+            decay_steps, decay_rate = learn_rate.decay_steps, learn_rate.decay_rate
+            staircase_opt = learn_rate.staircase
+            learn_rate = tf.keras.optimizers.schedules.ExponentialDecay(initial_learning_rate,
+                                        decay_steps, decay_rate, staircase=staircase_opt)
         elif learning_rate_decay == False:
             learn_rate = initial_learning_rate
 
@@ -268,7 +304,10 @@ def run_node(true_state_tensor, times_tensor, init_state, epochs, savedir, optim
                         avg_loss(loss)
 
                     train_loss_results.append(avg_loss.result().numpy())
-                    print("Epoch %d: Loss = %0.6f, LR = %0.6f" %(epoch + 1, avg_loss.result().numpy(), learn_rate(optimizer.iterations).numpy()))
+                    if learning_rate_decay:
+                        print("Epoch {0}: Loss = {1:0.6f}, LR = {2:0.6f}".format(ep+epoch+1, avg_loss.result().numpy(), learn_rate(optimizer.iterations).numpy()))
+                    else:
+                        print("Epoch {0}: Loss = {1:0.6f}, LR = {2:0.6f}".format(ep+epoch+1, avg_loss.result().numpy(), learn_rate))
                     print()
 
         elif minibatch == False:
@@ -286,7 +325,10 @@ def run_node(true_state_tensor, times_tensor, init_state, epochs, savedir, optim
                     optimizer.apply_gradients(zip(grads, model.trainable_variables))
 
                     train_loss_results.append(loss.numpy())
-                    print("Epoch %d: Loss = %0.6f, LR = %0.6f" %(ep+epoch+1, loss.numpy(), learn_rate(optimizer.iterations).numpy()))
+                    if learning_rate_decay:
+                        print("Epoch {0}: Loss = {1:0.6f}, LR = {2:0.6f}".format(ep+epoch+1, loss.numpy(), learn_rate(optimizer.iterations).numpy()))
+                    else:
+                        print("Epoch {0}: Loss = {1:0.6f}, LR = {2:0.6f}".format(ep+epoch+1, loss.numpy(), learn_rate))
                     print()
                     if (epoch+1)%(epochs//4) == 0:
                         print("Saving model state. Epoch {0}\n".format(epoch + ep + 1))
@@ -317,3 +359,99 @@ def run_node(true_state_tensor, times_tensor, init_state, epochs, savedir, optim
 
 
     return train_loss_results, train_lr, saved_ep
+
+
+
+def eval_node(times_predict, state_len, init_state, pre_trained_dir, adjoint=False,
+                        augmented=False, solver='rk4', **options):
+    """
+    Generate NODE predictions using a pretrained model
+
+    Input::
+    times_predict: Time array at which a trained NODE model is evaluated
+    state_len: size of the stacked latent space vector
+    init_state: Initial state vector
+    pre_trained_dir: Location of the trained NODE model
+    adjoint: Boolean. If True, the adjoint calculations are used in NODE
+                    evaluation
+    augmented: Boolean. If True, the augmented dimensions are removed
+                    from the predicted NODE solutions
+    solver: ODE solver used for the trained NODE model (Check `tfdiffeq`
+                documentation for options)
+
+    Output::
+    predicted_states: NODE predictions at the queried time points
+    """
+
+    model = main.DNN(state_len)
+    model.load_weights(pre_trained_dir+'ckpt')
+
+    if adjoint == True:
+        predicted_states = adjoint_odeint(model, tf.expand_dims(init_state, axis=0),
+                                    tf.convert_to_tensor(times_predict), method=solver)
+        predicted_states = tf.squeeze(predicted_states)
+        if augmented == True:
+            predicted_states = np.delete(predicted_states,slice(state_len,state_len+options['aug_dim']),axis=1)
+
+    elif adjoint == False:
+        predicted_states = odeint(model, tf.expand_dims(init_state, axis=0),
+                                    tf.convert_to_tensor(times_predict), method=solver)
+        predicted_states = tf.squeeze(predicted_states)
+        if augmented == True:
+            predicted_states = np.delete(predicted_states,slice(state_len,state_len+options['aug_dim']),axis=1)
+
+    return predicted_states
+
+def deaugment_state(state_array, aug_dim=0):
+    """
+    Compute deaugmented state arrays from
+    Augmented NODE predictions
+    Input::
+    state_array: ANODE prediction state array
+    aug_dim: How many rows to deaugment state vector
+    Output::
+    Deaugmented state array
+    """
+    if aug_dim == 0:
+        return state_array
+    else:
+        return state_array[:,:-aug_dim]
+
+
+def scale_time_inverse(time_array, tscale):
+    """
+    Apply inverse scaling to a given scaled
+    time array from [0,1] to [0,T]
+
+    Input::
+    time_array: numpy time array
+    tscale: Scaling factor to use
+
+    Output::
+    unscaled numpy time array
+    """
+    return time_array*tscale
+
+
+def scale_states_inverse(state_array, scaling_param):
+    """
+    Scale input states using different
+    methods
+    Input::
+    state_array: scaled 2d numpy array (Time X State)
+    scaling_param: Dict with parameters associated
+            with the scaling method used on the
+            given array
+
+    Output::
+    unscaled state array
+    """
+    if scaling_param['method'] == 'centered':
+        max_g = scaling_param['max_g']
+        min_g = scaling_param['min_g']
+        inverse_scaler = lambda z: ((z + 1)*(max_g - min_g)/2 + min_g)
+        state_array = inverse_scaler(state_array)
+    elif scaling_param['method'] == 'abs':
+        state_array = scale_mm.inverse_transform(state_array)
+
+    return state_array
