@@ -63,8 +63,7 @@ class NODEBase(object):
 
     def __init__(self, device, **options):
         self._device = device
-        # for thing in ['_U_r','_Sigma_r','_V_r','_X']:
-        #     setattr(self,thing,None)
+
 
     @property
     def n_latent(self):
@@ -350,6 +349,7 @@ class NODEBase(object):
                     learn_rate= self._learn_rate, device=self._device, solver=self._solver,
                     purpose=purpose, adjoint=self._adjoint, minibatch=minibatch,
                     pre_trained_dir=options['pre_trained_dir'])
+                    
         return train_loss_results, train_lr, saved_ep
 
 
@@ -378,7 +378,7 @@ class NODEBase(object):
                         pre_trained_dir, adjoint=self._adjoint, augmented=self._augmented,
                         solver=self._solver, aug_dim=self._aug_dim)
         pred_end_time = time.time()
-        print("Time needed to compute NODE predictions = %f"%(pred_end_time-pred_start_time))
+        print("Time needed to compute NODE predictions = %f minutes"%((pred_end_time-pred_start_time)/60))
 
         print("\n---- Postprocessing NODE solution ----\n")
         pred_state_array, times_predict = self.postprocess_results(pred_state_array)
@@ -435,8 +435,7 @@ class NODEBase(object):
         """
 
         err = {}
-        Nn = self.n_fine
-        Nc = len(soln_names)
+        Nn = true[soln_names[0]].shape[0]
         if metric == 'rms':
             for ivar, key in enumerate(soln_names):
                 err[key] = np.linalg.norm(true[key][:,:] - pred[key][:,:], axis = 0)/ \

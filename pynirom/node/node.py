@@ -139,7 +139,7 @@ def set_optimizer(opt='RMSprop', learn_rate=0.001):
     Set the optimizer for computing network hyperparameters
     Input::
     opt: string. Denotes the optimization algorithm to be used.
-            Currently supports 'Adam' and 'RMSprop'.
+            Currently supports 8 different optimizers.
     learn_rate: Either a fixed float32/64 scalar or a learning rate
             schedule that defines how the learning rate of the
             optimizer changes over time
@@ -152,19 +152,20 @@ def set_optimizer(opt='RMSprop', learn_rate=0.001):
         optimizer = tf.keras.optimizers.Adam(learning_rate = learn_rate)
     elif opt == 'RMSprop':
         optimizer = tf.keras.optimizers.RMSprop(learning_rate = learn_rate, momentum = 0.9)
-    elif optimizer == 'SGD':
+    elif opt == 'SGD':
         optimizer = tf.keras.optimizers.SGD(learning_rate = learn_rate)
-    elif optimizer == 'Adadelta':
+    elif opt == 'Adadelta':
         optimizer = tf.keras.optimizers.Adadelta(learning_rate = learn_rate)
-    elif optimizer == 'Adagrad':
+    elif opt == 'Adagrad':
         optimizer = tf.keras.optimizers.Adagrad(learning_rate = learn_rate)
-    elif optimizer == 'Adamax':
+    elif opt == 'Adamax':
         optimizer = tf.keras.optimizers.Adamax(learning_rate = learn_rate)
-    elif optimizer == 'Nadam':
+    elif opt == 'Nadam':
         optimizer = tf.keras.optimizers.Nadam(learning_rate = learn_rate)
-    elif optimizer == 'Ftrl':
+    elif opt == 'Ftrl':
         optimizer = tf.keras.optimizers.Ftrl(learning_rate = learn_rate)
-
+    else:  ### Defaults to RMSprop optimizer
+        optimizer = tf.keras.optimizers.RMSprop(learning_rate = learn_rate, momentum = 0.9)
 
     return optimizer
 
@@ -277,7 +278,7 @@ def run_node(true_state_tensor, times_tensor, init_state, epochs, savedir, optim
         saved_ep.append(epoch+1)
         np.savez_compressed(savedir+'/model_weights/train_lr', lr=train_lr, ep=saved_ep)
         end_time = time.time()
-        print("****Total training time = {0}****\n".format(end_time - start_time))
+        print("****Total training time = {0} minutes****\n".format((end_time - start_time)/60))
 
     elif purpose == 'retrain':
         pre_trained_dir = options['pre_trained_dir']
@@ -296,11 +297,7 @@ def run_node(true_state_tensor, times_tensor, init_state, epochs, savedir, optim
         elif learning_rate_decay == False:
             learn_rate = initial_learning_rate
 
-        if optimizer == 'Adam':
-            optimizer = tf.keras.optimizers.Adam(learning_rate = learn_rate)
-        elif optimizer == 'RMSprop':
-            optimizer = tf.keras.optimizers.RMSprop(learning_rate = learn_rate, momentum = 0.9)
-
+        optimizer = set_optimizer(opt=optimizer, learn_rate=learn_rate)
 
         if minibatch == True:
             dataset = tf.data.Dataset.from_tensor_slices((true_state_tensor, times_tensor))
@@ -362,7 +359,7 @@ def run_node(true_state_tensor, times_tensor, init_state, epochs, savedir, optim
 
 
         end_time = time.time()
-        print("****Total training time = {0}****\n".format(end_time - start_time))
+        print("****Total training time = {0} minutes****\n".format((end_time - start_time)/60))
 
         model.save_weights(savedir+'/model_weights/ckpt', save_format='tf')
         if learning_rate_decay:
