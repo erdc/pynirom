@@ -168,7 +168,8 @@ class NODEBase(object):
         return self._augmented
 
 
-    def prepare_input_data(self, Z_train, nw, times_train, stack_order, times_predict=None, Z_pred_true=None):
+    def prepare_input_data(self, Z_train, nw, times_train, stack_order,
+                                times_predict=None, Z_pred_true=None):
         """
         Set up latent space data in a format suitable
         for modeling with NODE
@@ -230,8 +231,8 @@ class NODEBase(object):
             return train_state_array, init_state, state_len, dt_train
 
 
-    def preprocess_data(self, scale_states=False, scale_time=False, augmented=False, lr_decay=True,
-                            init_lr = 0.001, opt='RMSprop', **options):
+    def preprocess_data(self, scale_states=False, scale_time=False, augmented=False,
+                lr_decay=True,init_lr = 0.001, opt='RMSprop', minibatch=False,**options):
         """
 
         Input::
@@ -240,7 +241,8 @@ class NODEBase(object):
         scaling_method: [Optional] string. If scale_states++True, specify
                         the scaling function to be used.
                         'centered' - maps each element to [-1,1]
-                        'abs' - maps each element to [0,1]
+                        'maxabs' - also maps each element to [-1,1]
+                        'minmax' - maps each element to [0,1]
         augmented: Boolean. If True, augment states arrays by a fixed size
         aug_dim: [Optional] int32/64. If augmented==True, specify size of
                             augmentation
@@ -289,8 +291,12 @@ class NODEBase(object):
         true_state_tensor, time_tensor, init_tensor = node.augment_state(train_state_array,
                                                     times_train, aug_dim)
 
+        if minibatch:
+            decay_steps = options['decay_steps']*np.floor(self._n_snap_train/options['batch_size'])
+        else:
+            decay_steps = options['decay_steps']
         learn_rate = node.set_learning_rate(decay=lr_decay, init_lr = init_lr,
-                    decay_steps = options['decay_steps'], decay_rate = options['decay_rate'],
+                    decay_steps = decay_steps, decay_rate = options['decay_rate'],
                     staircase = options['staircase'])
 
         optimizer = node.set_optimizer(opt=opt, learn_rate=learn_rate)
@@ -397,13 +403,13 @@ class NODEBase(object):
             pred_state_array = node.deaugment_state(pred_state_array, self._aug_dim)
 
         if self._scale_states:
-            predicted_states = node.scale_states_inverse(pred_state_array, self._state_scaler)
+            pred_state_array = node.scale_states_inverse(pred_state_array, self._state_scaler)
 
         if self._scale_time:
             times_predict = node.scale_time_inverse(self._predict_time, self._time_scaler)
             self._predict_time = times_predict
 
-        return predicted_states, self._predict_time
+        return pred_state_array, self._predict_time
 
 
 

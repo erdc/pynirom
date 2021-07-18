@@ -2,7 +2,7 @@
 
 import numpy as np
 import scipy
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler, MaxAbsScaler
 import time
 import os
 
@@ -65,8 +65,14 @@ def scale_states(state_array, method='centered'):
         state_array = scaler(state_array)
         scaling_param = {'max_g': max_g, 'min_g': min_g, 'method': method}
 
-    elif method == 'abs':  ## Scale each element between [0,1]
+    elif method == 'minmax':  ## Scale each element between [0,1]
         scale_mm = MinMaxScaler()
+        scale_mm.fit(state_array)
+        state_array = scale_mm.transform(state_array)
+        scaling_param = {'scale_mm': scale_mm, 'method': method}
+
+    elif method == 'maxabs':  ## Scale each element between [-1,1]
+        scale_mm = MaxAbsScaler()
         scale_mm.fit(state_array)
         state_array = scale_mm.transform(state_array)
         scaling_param = {'scale_mm': scale_mm, 'method': method}
@@ -146,6 +152,19 @@ def set_optimizer(opt='RMSprop', learn_rate=0.001):
         optimizer = tf.keras.optimizers.Adam(learning_rate = learn_rate)
     elif opt == 'RMSprop':
         optimizer = tf.keras.optimizers.RMSprop(learning_rate = learn_rate, momentum = 0.9)
+    elif optimizer == 'SGD':
+        optimizer = tf.keras.optimizers.SGD(learning_rate = learn_rate)
+    elif optimizer == 'Adadelta':
+        optimizer = tf.keras.optimizers.Adadelta(learning_rate = learn_rate)
+    elif optimizer == 'Adagrad':
+        optimizer = tf.keras.optimizers.Adagrad(learning_rate = learn_rate)
+    elif optimizer == 'Adamax':
+        optimizer = tf.keras.optimizers.Adamax(learning_rate = learn_rate)
+    elif optimizer == 'Nadam':
+        optimizer = tf.keras.optimizers.Nadam(learning_rate = learn_rate)
+    elif optimizer == 'Ftrl':
+        optimizer = tf.keras.optimizers.Ftrl(learning_rate = learn_rate)
+
 
     return optimizer
 
@@ -190,11 +209,12 @@ def run_node(true_state_tensor, times_tensor, init_state, epochs, savedir, optim
         learning_rate_decay = (not learn_rate.dtype == tf.float32)
     except:
         learning_rate_decay = True
-    
+
     if adjoint == True:
         int_ode = adjoint_odeint
     elif adjoint == False:
         int_ode = odeint
+
 
     if purpose == 'train':
         if not os.path.exists(savedir+'/model_weights/'):
@@ -451,7 +471,7 @@ def scale_states_inverse(state_array, scaling_param):
         min_g = scaling_param['min_g']
         inverse_scaler = lambda z: ((z + 1)*(max_g - min_g)/2 + min_g)
         state_array = inverse_scaler(state_array)
-    elif scaling_param['method'] == 'abs':
+    elif scaling_param['method'] == 'minmax' or scaling_param['method'] == 'maxabs':
         state_array = scale_mm.inverse_transform(state_array)
 
     return state_array
