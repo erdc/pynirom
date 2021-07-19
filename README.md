@@ -1,4 +1,4 @@
-# NIROM using Python
+# pyNIROM: Non-Intrusive Reduced Order Modeling using Python
 
 A collection of Python implementations of non-intrusive reduced order modeling techniques. This repo provides modules for
 1. linear dimension reduction using Proper Orthogonal Decomposition (POD),
