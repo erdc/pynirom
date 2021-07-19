@@ -50,7 +50,7 @@ These data files should be placed in the <./data/> directory.
 1. The ```PODRBF_cylinder.ipynb``` and ```PODRBF_SW.ipynb``` notebooks demonstrate the use of the PODRBF method for 2D flow around a cylinder and 2D shallow water flows in real world domains respectively.
 2. The ```DMD_cylinder.ipynb``` and ```DMD_SW.ipynb``` notebooks illustrate the use of DMD for these problems.
 3. The ```PODNODE_cylinder.ipynb``` and ```PODNODE_SW.ipynb``` notebooks illustrate the use of the PODNODE method for the example problems.
-4. The ```comparison_cylinder.ipynb``` and ```comparison_SW.ipynb``` notebooks contain visualizations to compare the predictions obtained using the different NIROM methods. To run these notebooks download the pre-computed PODNODE solution files from [Link](https://drive.google.com/drive/folders/19DEWdoS7Fkh-Cwe7Lbq6pdTdE290gYSS?usp=sharing) and place these files according to the instructions in the notebooks. Also, run the DMD and PODRBF notebooks for each example problem to generate the respective NIROM solutions. 
+4. The ```comparison_cylinder.ipynb``` and ```comparison_SW.ipynb``` notebooks contain visualizations to compare the predictions obtained using the different NIROM methods. To run these notebooks download the pre-computed PODNODE solution files from [Link](https://drive.google.com/drive/folders/19DEWdoS7Fkh-Cwe7Lbq6pdTdE290gYSS?usp=sharing) and place these files according to the instructions in the notebooks. Also, run the DMD and PODRBF notebooks for each example problem to generate the respective NIROM solutions.
 
 
 ## Authors
@@ -104,7 +104,7 @@ author = {Dutta, Sourav and Rivera-Casillas, Peter and Cecil, Orie M. and Farthi
 booktitle = {Proc. IXth Int. Conf. Comput. Methods Coupled Probl. Sci. Eng. (COUPLED Probl. 2021)},
 eprint = {2107.02784},
 pages = {1--16},
-publisher = {International Center forNumerical Methods in Engineering (CIMNE)},
+publisher = {International Center for Numerical Methods in Engineering (CIMNE)},
 title = {{Data-driven reduced order modeling of environmental hydrodynamics using deep autoencoders and neural ODEs}},
 year = {2021}
 }
