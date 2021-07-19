@@ -6,7 +6,7 @@ with open('README.md') as f:
 
 setup(
     name='pynirom',
-    version='0.1.0',
+    version='0.5.0',
     description='Python tools for non-intrusive reduced order modeling',
     long_description=readme,
     author='Sourav Dutta and Peter Rivera-Casillas and Orie Cecil and Matthew Farthing',

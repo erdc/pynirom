@@ -1,8 +1,8 @@
-numpy==1.20.1
-scipy==1.6.2
-matplotlib==3.3.4
-scikit-learn==0.23.2
-tensorflow-gpu==2.4.1
+numpy==1.19.5
+scipy==1.7.0
+matplotlib==3.4.2
+scikit-learn==0.24.2
+tensorflow-gpu==2.4.2
 tensorflow-probability==0.12.2
 six==1.15.0
 notebook==6.4.0

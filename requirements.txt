@@ -1,9 +1,9 @@
-﻿numpy==1.19.2
-scipy==1.6.2
-matplotlib==3.3.4
-scikit-learn==0.23.2
-tensorflow==2.4.1
+﻿numpy==1.19.5
+scipy==1.7.0
+matplotlib==3.4.2
+scikit-learn==0.24.2
+tensorflow==2.4.2
 tensorflow-probability==0.12.2
 six==1.15.0
 notebook==6.4.0
-git+git://github.com/titu1994/tfdiffeq.git@v0.0.1-pre0#egg=tfdiffeq
+git+git://github.com/titu1994/tfdiffeq.git@ef646f85cbd0821749a03e7ab51e03e16798fab1#egg=tfdiffeq

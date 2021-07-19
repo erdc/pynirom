@@ -9,6 +9,6 @@ from pynirom.rbf.main import PODRBFBase
 from pynirom.node.main import NODEBase
 from pynirom.node.main import DNN
 
-__version__ = '0.1.0'
+__version__ = '0.5.0'
 
 
