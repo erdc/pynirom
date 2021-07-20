@@ -35,8 +35,10 @@ For installation, it is assumed that Anaconda, pip, and all Nvidia drivers (GPU 
 1. Create a conda environment: ```conda create -n newenv python==3.8```
 2. Activate conda environment: ```conda activate newenv```
 3. Clone the package repository: ```git clone https://github.com/erdc/pynirom.git && cd pynirom```
-4. To install the dependencies for the CPU version of the package type: ```python3 -m pip install -r requirements.txt .```, or to install the dependencies for GPU support type: ```python3 -m pip install -r requirements_gpu.txt . && ./install_gpu.sh```
-5. Alternatively, the dependencies can be installed using ```pip``` or ```conda``` and then, the ```pynirom``` package can be installed by: ```python3 setup.py install```
+4. To install the dependencies for the CPU version of the package type: ```python3 -m pip install -r requirements.txt .```
+5. Alternatively, to install the dependencies for GPU support type: ```./install_gpu.sh```
+
+Note: the dependencies can also be manually installed from the appropriate ```requirements``` file using ```pip``` or ```conda``` and then, the ```pynirom``` package can be installed by typing: ```python3 setup.py install```. For the GPU version, we recommend using conda to install dependencies in order to ensure that any missing Cuda libraries are also added to the environment.
 
 
 ### Example notebooks to get started
