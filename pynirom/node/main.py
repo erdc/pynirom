@@ -364,7 +364,7 @@ class NODEBase(object):
         aug_dim: [Optional]
         """
         if self._scale_time:
-            times_predict, tscale = node.scale_time(times_predict, self._time_scaler)
+            times_predict, tscale = node.scale_time(times_predict, tscale=self._time_scaler)
         else:
             pass
 

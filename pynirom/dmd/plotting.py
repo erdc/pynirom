@@ -93,6 +93,7 @@ def plot_DMD_eval(D,r,):
 def plot_DMD_err(err, tseries, soln_names, var_string,**kwargs):
     """
     Plot error metrics for DMD solution
+    (Assumes a three component model: u,v,p )
     Input::
     err: Dictionary with 1d arrays of solution component error values as keys
     tseries: Scaled time series used as x-axis of plots

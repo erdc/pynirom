@@ -43,15 +43,16 @@ Note: the dependencies can also be manually installed from the appropriate ```re
 
 ### Example notebooks to get started
 
-The examples directory contains several Jupyter notebooks that demonstrate how to use the different NIROM methodologies to build reduced order models for two fluid flow problems governed by the incompressible Navier Stokes equations and the shallow water equations.
+The examples directory contains several Jupyter notebooks that demonstrate how to use the different NIROM methodologies to build reduced order models for fluid flow problems governed by the incompressible Navier Stokes equations, the shallow water equations and 2D Burgers' equation.
 The high-fidelity snapshot data files are available at
-[Shallow Water example](https://drive.google.com/drive/folders/1yhudg8RPvwV9SJx9CTqANEnyN55Grzem?usp=sharing), and
-[Navier Stokes example](https://drive.google.com/drive/folders/1QG4dyoil5QGHjx3d1L3t0S6lsTGS7Vh0?usp=sharing).
+[Shallow Water example](https://drive.google.com/drive/folders/1yhudg8RPvwV9SJx9CTqANEnyN55Grzem?usp=sharing),
+[Navier Stokes example](https://drive.google.com/drive/folders/1QG4dyoil5QGHjx3d1L3t0S6lsTGS7Vh0?usp=sharing), and
+[2D Burgers' example](https://drive.google.com/drive/folders/1mzIPvazsxNQd_ThjyKJayOJzOy6dYfNb?usp=sharing).
 These data files should be placed in the <./data/> directory.
 
 1. The ```PODRBF_cylinder.ipynb``` and ```PODRBF_SW.ipynb``` notebooks demonstrate the use of the PODRBF method for 2D flow around a cylinder and 2D shallow water flows in real world domains respectively.
 2. The ```DMD_cylinder.ipynb``` and ```DMD_SW.ipynb``` notebooks illustrate the use of DMD for these problems.
-3. The ```PODNODE_cylinder.ipynb``` and ```PODNODE_SW.ipynb``` notebooks illustrate the use of the PODNODE method for the example problems.
+3. The ```PODNODE_cylinder.ipynb```, ```PODNODE_SW.ipynb```, and ```PODNODE_burgers2d``` notebooks illustrate the use of the PODNODE method for the example problems.
 4. The ```comparison_cylinder.ipynb``` and ```comparison_SW.ipynb``` notebooks contain visualizations to compare the predictions obtained using the different NIROM methods. To run these notebooks download the pre-computed PODNODE solution files from [Link](https://drive.google.com/drive/folders/19DEWdoS7Fkh-Cwe7Lbq6pdTdE290gYSS?usp=sharing) and place these files according to the instructions in the notebooks. Also, run the DMD and PODRBF notebooks for each example problem to generate the respective NIROM solutions.
 
 

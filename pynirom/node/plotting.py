@@ -42,7 +42,8 @@ plt.rcParams.update({'font.size': 20,
 
 def plot_NODE_err(err, tseries, soln_names, var_string,**kwargs):
     """
-    Plot error metrics for DMD solution
+    Plot error metrics for NODE solution
+    (Assumes a three component model: u,v,p )
     Input::
     err: Dictionary with 1d arrays of solution component error values as keys
     tseries: Scaled time series used as x-axis of plots
