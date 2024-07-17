@@ -28,17 +28,16 @@ For details on each method and the numerical examples please refer to -
 * tfdiffeq - Installation directions are available at [tfdiffeq](https://github.com/titu1994/tfdiffeq).
 
 The code has been tested with Python3.7 and Python 3.8, but it should be compatible with any Python3.x. Python2 support is no longer maintained.
-A list of all the package requirements along with version information is provided in the [requirements](requirements.txt) file.
+A list of all the package requirements is provided in the [requirements](requirements.txt) file.
 
 For installation, it is assumed that Anaconda, pip, and all Nvidia drivers (GPU support) are already installed. Then the following steps can be used to create a conda environment and install all necessary dependencies. Alternatively, python virtual environments can also be used.
 
-1. Create a conda environment: ```conda create -n newenv python==3.8```
+1. Create a conda environment: ```conda create -n newenv```
 2. Activate conda environment: ```conda activate newenv```
 3. Clone the package repository: ```git clone https://github.com/erdc/pynirom.git && cd pynirom```
-4. To install the dependencies for the CPU version of the package type: ```python3 -m pip install -r requirements.txt .```
-5. Alternatively, to install the dependencies for GPU support type: ```./install_gpu.sh```
+4. To install the package and its dependencies type: ```./install.sh```
 
-Note: the dependencies can also be manually installed from the appropriate ```requirements``` file using ```pip``` or ```conda``` and then, the ```pynirom``` package can be installed by typing: ```python3 setup.py install```. For the GPU version, we recommend using conda to install dependencies in order to ensure that any missing Cuda libraries are also added to the environment.
+Note: the dependencies can also be manually installed from the appropriate ```requirements``` file using ```pip``` or ```conda``` and then, the ```pynirom``` package can be installed by typing: ```python3 setup.py install```. We recommend following the installation instructions in the official tensorflow documentation at [tensorflow.org](https://www.tensorflow.org/install/pip#linux).
 
 
 ### Example notebooks to get started
