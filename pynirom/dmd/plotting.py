@@ -107,7 +107,13 @@ def plot_DMD_err(err, tseries, soln_names, var_string,**kwargs):
             metric = 'rel' implies relative error
     """
 
-    ky1 = soln_names[0]; ky2 = soln_names[1]; ky3 = soln_names[2]
+    ky1 = soln_names[0];
+    ky2,ky3=None,None
+    if len(soln_names) > 1:
+        ky2 = soln_names[1];
+    if len(soln_names) > 2:
+        ky3 = soln_names[2]
+        
     if 'unit' in kwargs:
         t_unit = kwargs['unit']
     else:
@@ -123,17 +129,21 @@ def plot_DMD_err(err, tseries, soln_names, var_string,**kwargs):
     ax1.set_xlabel('Time (%s)'%t_unit);lg=plt.legend(ncol=2, fancybox=True,)
 
     ax2 = fig.add_subplot(1, 2, 2)
-    ax2.plot(tseries[:], err[ky2][:], 'b-o', markersize=8,
-                    label='$\mathbf{%s}$'%(var_string[ky2]), lw=2, markevery=freq)
-    ax2.plot(tseries[:], err[ky3][:], 'g-^', markersize=8,
-                    label='$\mathbf{%s}$'%(var_string[ky3]), lw=2, markevery=freq-10)
-    ymax_ax2 = np.maximum(err[ky2][:].max(), err[ky3][:].max())
-    ax2.set_xlabel('Time (%s)'%t_unit);lg=plt.legend(ncol=2, fancybox=True,)
+    if ky2 is not None:
+        ax2.plot(tseries[:], err[ky2][:], 'b-o', markersize=8,
+                 label='$\mathbf{%s}$'%(var_string[ky2]), lw=2, markevery=freq)
+        ymax_ax2 = err[ky2][:].max()
+        if ky3 is not None:
+            ax2.plot(tseries[:], err[ky3][:], 'g-^', markersize=8,
+                     label='$\mathbf{%s}$'%(var_string[ky3]), lw=2, markevery=freq-10)
+            ymax_ax2 = np.maximum(err[ky2][:].max(), err[ky3][:].max())
+        ax2.set_xlabel('Time (%s)'%t_unit);lg=plt.legend(ncol=2, fancybox=True,)
 
     if 'mark' in kwargs:
         tr_mark = kwargs['mark']
         ax1.vlines(tseries[tr_mark], 0, ymax_ax1, colors ='k', linestyles='dashdot')
-        ax2.vlines(tseries[tr_mark],0,ymax_ax2, colors = 'k', linestyles ='dashdot')
+        if ky2 is not None:
+            ax2.vlines(tseries[tr_mark],0,ymax_ax2, colors = 'k', linestyles ='dashdot')
 
     if 'metric' in kwargs:
         if kwargs['metric'] == 'rel':

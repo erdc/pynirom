@@ -10,7 +10,10 @@ import scipy
 from scipy.spatial.distance import cdist
 from numpy.lib.scimath import sqrt as csqrt
 from scipy import interpolate
-from scipy.integrate import simps
+if scipy.__version__ >= "1.15.0":
+    from scipy.integrate import simpson as simps
+else:
+    from scipy.integrate import simps
 
 #from . import pod as pod
 from . import rbf as rbf
