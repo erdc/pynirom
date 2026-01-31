@@ -13,6 +13,9 @@ from pynirom.rbf import rbf as rbf
 from pynirom.rbf import greedy as gdy
 from pynirom.rbf import rom as rom
 
+"""
+TODO: bug if rank is provided, to PODBRFBase, then trunc is not set
+"""
 
 class PODRBFBase(object):
     """
@@ -153,7 +156,7 @@ class PODRBFBase(object):
                         for each solution component
         """
         self._S = S
-        self._comp_keys = S.keys()
+        self._comp_keys = list(S.keys())  # Convert to list for pickle compatibility
         self._times_offline = times_offline
         self._n_snap_train = times_offline.shape[0]
         assert self._n_snap_train == self._S[list(S.keys())[0]].shape[1]

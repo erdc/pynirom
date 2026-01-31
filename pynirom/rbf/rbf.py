@@ -349,7 +349,8 @@ def rbf_evaluate_modal(x, centers, wts, epsilon=0.05, kernel='matern', beta=2.5)
     
     dzdt = np.zeros((wts.shape[0],))
     for J in range(wts.shape[0]):
-        dzdt[J] = wts[J, :].dot(phi_online.T)
+        # Use squeeze to handle numpy version compatibility (convert (1,) array to scalar)
+        dzdt[J] = np.squeeze(wts[J, :].dot(phi_online.T))
 
     return dzdt
 
